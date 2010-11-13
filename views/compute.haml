@@ -24,7 +24,7 @@
       
       window.worker = new Worker("/worker.js");
       window.worker.onmessage = function(event) {
-        console.log(event.data);
+        // console.log(event.data);
 
         var data = event.data;
         socket.send({message: 'job_completed', id:data.id, data:data.data, uuid:"#{uuid}"});
@@ -35,11 +35,11 @@
         socket.send({message: 'next_job', uuid:"#{uuid}"});
       };
 
-      console.log(data);
+      // console.log(data);
       document.getElementById("status").innerHTML += ('<p>Starting new job ' + data.job.id +  ' ....</p>');
       window.worker.postMessage(data.job);
     } else if(data.message == "stop" && data.uuid == "#{uuid}") {
-      console.log("Terminating worker...");
+      // console.log("Terminating worker...");
       document.getElementById("status").innerHTML += '<p>Terminating worker...</p>';
 
       if(window.worker) {
