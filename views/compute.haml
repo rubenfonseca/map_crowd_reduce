@@ -29,12 +29,14 @@
         var data = event.data;
         socket.send({message: 'job_completed', id:data.id, data:data.data, uuid:"#{uuid}"});
 
+        window.worker.terminate();
+
         document.getElementById("status").innerHTML += '<p>Requesting another job...</p>';
         socket.send({message: 'next_job', uuid:"#{uuid}"});
       };
 
       console.log(data);
-      document.getElementById("status").innerHTML += '<p>Starting new job....</p>';
+      document.getElementById("status").innerHTML += ('<p>Starting new job ' + data.job.id +  ' ....</p>');
       window.worker.postMessage(data.job);
     } else if(data.message == "stop" && data.uuid == "#{uuid}") {
       console.log("Terminating worker...");

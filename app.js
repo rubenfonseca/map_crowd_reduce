@@ -165,7 +165,17 @@ app.post('/new_job', function(req, res) {
     state[u]['r'] = r;
 
     console.log("Redirecting to computation");
-    res.redirect('/compute/' + u);
+
+    res.redirect('/computation_ready/' + u);
+  });
+});
+
+app.get('/computation_ready/:id', function(req, res) {
+  res.render('ready.haml', {
+    locals: {
+      title: "READYYYYYYYY",
+      uuid: req.params.id
+    }
   });
 });
 
