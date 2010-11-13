@@ -1,0 +1,75 @@
+%script{src: "examples.js"}
+%h1= title
+%p Welcome to #{title}
+
+:if computations
+  %h2 Current computations
+
+  %ul
+  :each k in computations
+    %li
+      %a{href: '/compute/' + __key__}= __key__
+
+:javascript
+  function load_example_1() {
+    var s1 = "function(input) {\n\treturn [ [0,1000], [1001,2000], [2001,3000], [3001,4000], [4001,5000], [5001,6000] ];\n}";
+    var m1 = "function(interval) {\n\tvar ret = [];\n\tvar isprime = function (num){\n\t\tvar prime = true;\n\t\tif (num == 1 || num == 2 || num == 3) {      prime=true;    } else {      for (var i=2;i<=Math.ceil(num/2);i++) {        if (num % i == 0) {          prime=false;          break;        }      }     }    return prime;  };  for(var n=interval[0]; n<interval[1]; n++) {    if(isprime(n))      ret.push(n);    else      ret.push(0);  }  return ret;\n}";
+    var r1 = "function(array) {\n\tvar res = 0;  for(var i=0; i<array.length; i++) {    for(var j=0; j<array[i].length; j++) {      if(array[i][j] != 0) {        res += 1;      }    }  }  return res;\n}";
+
+    s_editor.value = s1;
+    map_editor.value = m1;
+    reduce_editor.value = r1;
+  };
+  function load_example_2(){
+    load_example(example2[0], example2[1], example2[2]);
+  };
+
+%h3 Prewritten examples
+
+%button{onclick: "load_example_1()"}
+  Find the number of prime numbers between 0 and 6000
+
+%button{onclick: "load_example_2()"}
+  Count the number of words in a text
+
+%form{action: '/new_job', method:'POST', enctype:'multipart/form-data'}
+  %p
+    %label{for: 's'}s function
+    %br
+    %textarea{name: 's', rows:20, cols:100, id:'s'}
+
+  %p
+    %label{for: 'map'}map function
+    %br
+    %textarea{name: 'map', rows:20, cols:100, id:'map'}
+
+  %p
+    %label{for: 'reduce'}reduce function
+    %br
+    %textarea{name: 'reduce', rows:20, cols:100, id:'reduce'}
+
+  %p
+    %label{for: 'file'}input file
+    %input{type:'file', name:'file'}
+
+  %p
+    %button{type:'submit'}Finish him
+
+%link{id: "bespin_base", href:"/"}
+%script{src:"/BespinEmbedded.js"}
+
+:javascript
+  window.onBespinLoad = function() {
+    bespin.useBespin('s', { syntax:'js' }).then(function(env) {
+      window.s_editor = env.editor;
+    }, function(error) {});
+
+    bespin.useBespin('map', { syntax:'js' }).then(function(env) {
+      window.map_editor = env.editor;
+    }, function(error) {});
+
+    bespin.useBespin('reduce', { syntax:'js' }).then(function(env) {
+      window.reduce_editor = env.editor;
+      load_example_1();
+    }, function(error) {});
+  }
