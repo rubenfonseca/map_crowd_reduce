@@ -18,38 +18,38 @@ You can supply a file payload that will be chuncked by the next function.
 
 h3. A split/segmenter JS function
 
-<code>
+<pre><code>
   function s(input) {
     // optionally read the input and generate a list of segments to be mapped
 
     return [ ... ];
   }
-</code>
+</code></pre>
 
 This function will run *on the server side*, and will generate a list of jobs to map.
 
 h3. A map JS function
 
-<code>
+<pre><code>
   function map(args) {
     // do heavy computation with args
 
     return result;
   }
-</code>
+</code></pre>
 
 This function will run *on client side*. Please generate as many as you want :)
 
 h3. A reduce JS function
 
-<code>
+<pre><code>
   function reduce(arg) {
     // arg is [result, result, result, result]
 
     // reduce them :)
     return final_result;
   }
-</code>
+</code></pre>
 
 This function will run *on the client side*.
 
