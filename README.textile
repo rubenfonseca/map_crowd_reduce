@@ -1,0 +1,109 @@
+h1. Map Crowd Reduce
+
+This project is a "SETI-at-home-like infrastructure for massively distributed cpu-intensive jobs based on HTML5 WebWorkers and node.js for distributing the tasks". (quote from "Pedro Teixeira's blog":http://metaduck.com/post/1566446922/codebits-2010).
+
+This project made into the final "SAPO Codebits 2010":http://codebits.eu programming contest, but unfortunately didn't win :)
+
+The code was built in an afternoon with the "help":http://codebits.eu/microft "of":http://codebits.eu/overflow "some":http://codebits.eu/regadas "friends":http://codebits.eu/smash. It was my first real-world JavaScript code, so there's a lot to cleanup and improve :)
+
+h2. Quick Overview
+
+The project consists of a node.js server that created a HTTP server on port 3000.
+
+To start a new computation, you must open the main page, and supply 3 or 4 things:
+
+h3. A payload (optional)
+
+You can supply a file payload that will be chuncked by the next function.
+
+h3. A split/segmenter JS function
+
+<code>
+  function s(input) {
+    // optionally read the input and generate a list of segments to be mapped
+
+    return [ ... ];
+  }
+</code>
+
+This function will run *on the server side*, and will generate a list of jobs to map.
+
+h3. A map JS function
+
+<code>
+  function map(args) {
+    // do heavy computation with args
+
+    return result;
+  }
+</code>
+
+This function will run *on client side*. Please generate as many as you want :)
+
+h3. A reduce JS function
+
+<code>
+  function reduce(arg) {
+    // arg is [result, result, result, result]
+
+    // reduce them :)
+    return final_result;
+  }
+</code>
+
+This function will run *on the client side*.
+
+After you define the functions, the system gives you an URL that you can share with anyone wanting to contribute with CPU to the computation.
+
+The client side functions are run on a "WebWorker":http://www.whatwg.org/specs/web-workers/current-work/ so it doesn't block the main UI thread.
+
+WebSockets are used for maintaining communication between server and clients.
+
+h2. Requirements / installation
+
+On the client you need a modern browser (latest version of Firefox, Chrome and Webkit should work).
+
+On the sever you will need latest "node.js stable":http://nodejs.org/ and "npm":https://github.com/isaacs/npm, and the following node modules:
+
+* express
+* connect-form
+* uuid
+* haml
+* socket.io
+
+h2. Examples
+
+With the code there are 2 prewritten examples:
+
+* find the number of primes between 0 and 60000 (brute force)
+
+this uses a brute-force method of testing if each number is a prime, from 0 to 60000. it runs very fast and can be used to debug.
+
+* find a MD5 collision with the MD5('code') on all words with 5 or less alfa words
+
+this lasts 15 minutes on a single machine. when I tested it on the main stage, 50 people connected their browsers at it lasted like 20 seconds (#win).
+
+To run the examples you just open the root path of the web server and click on the button example. It will fill all the JS boxes with the prewritten code.
+
+h2. Limitations
+
+The main limitation is how we handle and store the input and results. Right now, when you upload the payload, node.js loads it into memory to pass them to the _s_ function.
+
+Also, if your _s_ function generates billion of jobs, the things could not work because all the data and arguments are kept in memory.
+
+This also means that right now, if you close the server, you loose the current computation.
+
+h2. Security Considerations
+
+There are two main security problems at the moment. First of all, the _s_ function is run on the server side without any security check. I admit that I have no idea on if and how I could do that on node.js. Any hints (and patches) are appreciated :)
+
+The second security problem is a feature :) At the end of the computation, the result of the reduce function is sent to all connected clients and injected in the DOM. This means that the reduce function can generate cool stuff like _canvas_ with a beautiful fractal, but it also means that a malicious user can inject some nasty HTML on the client side.
+
+h2. Further work
+
+As this was built as a quick hack, and by people with no experience on JS other that quick hacks on the browser, the code has a lot to improve. I'm specially looking into better modularization/encapsulation of the code.
+
+As I'm writing this, some friends of mine are looking to build other cool examples, like building a distributed Mandelbrot fractal!
+
+Also, I'm trying to get my feet wet with WebGL, because I think this could be improved by making some heavily number crunching on the client GPU :)
+

@@ -243,3 +243,10 @@ var example2_r = 'function(results){ \n \
   return res.join(" "); \n \
 }';
 var example2 = [ example2_s, example2_m, example2_r];
+
+
+var example3_s = ' ';
+var example3_m = ' ';
+var example3_r = ' ';
+
+var example3 = [example3_s,example3_m,example3_r];
