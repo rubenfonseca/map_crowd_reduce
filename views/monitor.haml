@@ -1,0 +1,74 @@
+%h1= title
+
+%link{href:"http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css", rel:"stylesheet", type:"text/css"}
+%script{src: "https://ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.min.js"}
+%script{src: "https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.6/jquery-ui.min.js"}
+
+%script{src: "/socket.io/socket.io.js"}
+:javascript
+  $(function() {
+    $('#progressbar').progressbar({ value: 0 });
+  });
+
+  function supports_web_workers() { return !!window.Worker; }
+
+  var socket = new io.Socket(window.location.hostname, {'port': 3000}); 
+
+  socket.on('connect', function(){ 
+    document.getElementById("status").innerHTML += '<p>Connected. Requesting job...</p>';
+    socket.send({message: 'next_job', uuid: "#{uuid}"});
+  });
+
+  socket.on('message', function(data) { 
+    if(data.message == "process") {
+      
+      window.worker = new Worker("/worker.js");
+      window.worker.onmessage = function(event) {
+        // console.log(event.data);
+
+        var data = event.data;
+        socket.send({message: 'job_completed', id:data.id, data:data.data, uuid:"#{uuid}"});
+
+        window.worker.terminate();
+
+        document.getElementById("status").innerHTML += '<p>Requesting another job...</p>';
+        socket.send({message: 'next_job', uuid:"#{uuid}"});
+      };
+
+      // console.log(data);
+      document.getElementById("status").innerHTML += ('<p>Starting new job ' + data.job.id +  ' ....</p>');
+      window.worker.postMessage(data.job);
+    } else if(data.message == "stop" && data.uuid == "#{uuid}") {
+      // console.log("Terminating worker...");
+      document.getElementById("status").innerHTML += '<p>Terminating worker...</p>';
+
+      if(window.worker) {
+        window.worker.terminate();
+      document.getElementById("status").innerHTML += '<p>Worker terminated!</p>';
+      }
+    } else if(data.message == "result" && data.uuid == "#{uuid}") {
+      document.getElementById("status").innerHTML += '<p>The result of this awesome computation is: ' + data.data + '</p>';
+      $('#progressbar').progressbar({ value: 100 });
+    } else if(data.message == "status" && data.uuid == "#{uuid}") {
+      $('#progressbar').progressbar({ value: data.percentage });
+    }
+  });
+
+  socket.on('disconnect', function(){ 
+    document.getElementById("status").innerHTML += '<p>Disconnected!</p>';
+    if(window.worker) {
+      document.getElementById("status").innerHTML += '<p>Terminating worker...</p>';
+      window.worker.terminate();
+      document.getElementById("status").innerHTML += '<p>Worker terminated!</p>';
+    }
+  });
+  
+  if ( supports_web_workers() ) { socket.connect(); }
+  else { 
+      document.getElementById("status").innerHTML = '<p>Your browser does not support WebWorkers!</p>';
+  }
+
+#progressbar
+
+#status
+
