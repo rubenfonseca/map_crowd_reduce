@@ -101,6 +101,8 @@ socket.on('connection', function(client) {
           state[u]['m_jobs'].push(r_job);
         }
       }
+    } else if (data.message == 'monitor') {
+      console.log("Someone is not doing any work (just monitoring progress)");
     } else {
       console.log("Unknown message " + data);
     }
