@@ -102,6 +102,8 @@ socket.on('connection', function(client) {
         }
       }
     } else if (data.message == 'monitor') {
+      var u  = data.uuid;
+      client.send({message:"status", uuid:u, percentage:((state[u]['total_jobs'] - state[u]['m_jobs'].length) * 100) / state[u]['total_jobs']});
       console.log("Someone is not doing any work (just monitoring progress)");
     } else {
       console.log("Unknown message " + data);
