@@ -188,6 +188,15 @@ app.get('/compute/:id', function(req, res) {
   });
 });
 
+app.get('/monitor/:id', function(req, res) {
+  res.render('monitor.haml', {
+    locals: {
+      title: "Monitor",
+      uuid: req.params.id
+    }
+  });
+});
+
 app.get('/worker.js', function(req, res) {
   res.sendfile(__dirname + "/views/worker.js");
 });
