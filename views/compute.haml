@@ -24,7 +24,7 @@
       window.worker.onmessage = function(event) {
 
       // comment this line to work in firefox
-      console.log(event.data);
+      //console.log(event.data);
 
         var data = event.data;
         socket.send({message: 'job_completed', id:data.id, data:data.data, uuid:"#{uuid}"});
@@ -36,7 +36,7 @@
       };
 
       //comment this line to work in firefox
-      console.log(data);
+      //console.log(data);
       smessage('Starting new job ' + data.job.id +  ' ....');
       window.worker.postMessage(data.job);
     } else if(data.message == "stop" && data.uuid == "#{uuid}") {
