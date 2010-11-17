@@ -12,7 +12,7 @@
 
   function supports_web_workers() { return !!window.Worker; }
 
-  var socket = new io.Socket(window.location.hostname, {'port': 3000}); 
+  var socket = new io.Socket(window.location.hostname, {'port': window.location.port}); 
 
   socket.on('connect', function(){ 
     document.getElementById("status").innerHTML += '<p>Connected. Requesting job...</p>';
