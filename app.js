@@ -10,6 +10,8 @@ var app = module.exports = express.createServer();
 var fs = require('fs');
 var uuid = require('uuid');
 
+var Sandbox = require('sandbox');
+
 // Configuration
 
 app.configure(function(){
@@ -153,6 +155,10 @@ app.post('/new_job', function(req, res) {
 
     console.log("Slicing.....");
     var m_results = [];
+    // Run slicing function in a sandbox
+    var sandbox = new Sandbox();
+    sandbox.run("(" + fields['s'] + ")()", function(output){console.log(output)});
+
     var m_jobs = s.runInNewContext({})(file_data);
     for(var i=0; i<m_jobs.length; i++) {
       m_jobs[i] = {
