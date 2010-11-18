@@ -10,7 +10,7 @@ var app = module.exports = express.createServer();
 var fs = require('fs');
 var uuid = require('uuid');
 
-var Sandbox = require('sandbox');
+//var Sandbox = require('sandbox');
 
 // Configuration
 
@@ -46,7 +46,7 @@ socket.on('connection', function(client) {
     };
 
     if(data.message == "next_job") {
-      console.log("Client " + client.sessionId + " asked for next job");
+      console.log("Client " + client.sessionId + " asked for next job for computation " + data.uuid);
 
       if(state[data.uuid]['m_jobs'].length > 0) {
         var job = state[data.uuid]['m_jobs'].shift();
@@ -54,6 +54,10 @@ socket.on('connection', function(client) {
         console.log("Client " + client.sessionId + " received a new job " + data.uuid + " | " + job.id);
         client.send({message: 'process', job:job});
         state[data.uuid]['m_jobs'].push(job);
+
+        // Store which clients are working on this computation
+        state[data.uuid]['clients'].push(client.sessionId);
+
         return;
       } else {
         console.log("No job available for " + client.sessionId);
@@ -64,7 +68,10 @@ socket.on('connection', function(client) {
 
       console.log("Client " + client.sessionId + " finished a job! " + u + " | " + id);
 
-      socket.broadcast({message:"status", uuid:u, percentage:((state[u]['total_jobs'] - state[u]['m_jobs'].length) * 100) / state[u]['total_jobs']});
+      // send current computation status to clients
+      var job_done_percent = ((state[u]['total_jobs'] - state[u]['m_jobs'].length) * 100) / state[u]['total_jobs'];
+      var broadcast_message = {message:"status", uuid:u, percentage: job_done_percent };
+      socket.broadcast( broadcast_message );
 
       for(var i=0; i<state[u]['m_jobs'].length; i++) {
         if(state[u]['m_jobs'][i].id == id) {
@@ -99,7 +106,12 @@ socket.on('connection', function(client) {
       }
     } else if (data.message == 'monitor') {
       var u  = data.uuid;
-      client.send({message:"status", uuid:u, percentage:((state[u]['total_jobs'] - state[u]['m_jobs'].length) * 100) / state[u]['total_jobs']});
+
+      // Send status of computation to monitor that just connected
+      var job_done_percent = ((state[u]['total_jobs'] - state[u]['m_jobs'].length) * 100) / state[u]['total_jobs'];
+      var status_message = {message:"status", uuid:u, percentage: job_done_percent };
+      client.send( status_message );
+
       console.log("Someone is not doing any work (just monitoring progress)");
     } else {
       console.log("Unknown message " + data);
@@ -150,8 +162,8 @@ app.post('/new_job', function(req, res) {
     console.log("Slicing.....");
     var m_results = [];
     // Run slicing function in a sandbox
-    var sandbox = new Sandbox();
-    sandbox.run("(" + fields['s'] + ")()", function(output){console.log(output)});
+    //var sandbox = new Sandbox();
+    //sandbox.run("(" + fields['s'] + ")()", function(output){console.log(output)});
 
     var m_jobs = s.runInNewContext({})(file_data);
     for(var i=0; i<m_jobs.length; i++) {
@@ -167,6 +179,8 @@ app.post('/new_job', function(req, res) {
     state[u]['m_jobs'] = m_jobs;
     state[u]['total_jobs'] = m_jobs.length;
     state[u]['r'] = r;
+    state[u]['clients'] = [];
+    
 
     console.log("Redirecting to computation");
 
