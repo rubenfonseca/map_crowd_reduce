@@ -62,9 +62,7 @@ socket.on('connection', function(client) {
 
       console.log("Client " + client.sessionId + " finished a job! " + u + " | " + id);
 
-      for(var c in socket.clients) {
-        socket.clients[c].send({message:"status", uuid:u, percentage:((state[u]['total_jobs'] - state[u]['m_jobs'].length) * 100) / state[u]['total_jobs']});
-      }
+      socket.broadcast({message:"status", uuid:u, percentage:((state[u]['total_jobs'] - state[u]['m_jobs'].length) * 100) / state[u]['total_jobs']});
 
       for(var i=0; i<state[u]['m_jobs'].length; i++) {
         if(state[u]['m_jobs'][i].id == id) {
@@ -76,9 +74,7 @@ socket.on('connection', function(client) {
         console.log("Reduce job finished :D");
         console.log(data.data);
 
-        for(var c in socket.clients) {
-          socket.clients[c].send({message:"result", data:data.data, uuid:u});
-        }
+        socket.broadcast({message:"result", data:data.data, uuid:u});
 
         delete state[u];
       } else {
@@ -88,9 +84,7 @@ socket.on('connection', function(client) {
           console.log("Map phase finished :D");
 
           console.log("Sending terminate message to all clients");
-          for(var c in socket.clients) {
-            socket.clients[c].send({message:"stop", uuid:u});
-          }
+          socket.broadcast({message:"stop", uuid:u});
 
           var r_job = {
             data: state[u]['m_results'],
