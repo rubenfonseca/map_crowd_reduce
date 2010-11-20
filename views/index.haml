@@ -1,5 +1,4 @@
 %script{src: "examples.js"}
-%script{src: "md5_oneline.js"}
 %h1= title
 %p Welcome to #{title}
 
@@ -28,7 +27,7 @@
 %h3 Prewritten examples
 
 %button{onclick: "load_example_1()"}
-  Find the number of prime numbers between 0 and 6000
+  Find the number of primes
 
 %button{onclick: "load_example_2()"}
   Find md5 collision
@@ -71,6 +70,5 @@
 
     bespin.useBespin('reduce', { syntax:'js' }).then(function(env) {
       window.reduce_editor = env.editor;
-      load_example_1();
     }, function(error) {});
   }

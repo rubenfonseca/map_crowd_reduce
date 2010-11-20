@@ -3,8 +3,8 @@
 %link{href:"http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css", rel:"stylesheet", type:"text/css"}
 %script{src: "https://ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.min.js"}
 %script{src: "https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.6/jquery-ui.min.js"}
-
 %script{src: "/socket.io/socket.io.js"}
+%script{src: "/mcr.js"}
 :javascript
   function supports_web_workers() { return !!window.Worker; }
 
@@ -15,12 +15,12 @@
 
     if ( supports_web_workers() ) { socket.connect(); }
     else { 
-        document.getElementById("status").innerHTML = '<p>Your browser does not support WebWorkers!</p>';
+        smessage('Your browser does not support WebWorkers!');
     }
   });
 
   socket.on('connect', function(){ 
-    document.getElementById("status").innerHTML += '<p>Connected. Requesting job...</p>';
+    smessage('Connected. Requesting job...');
     socket.send({message: 'next_job', uuid: "#{uuid}"});
   });
 
@@ -29,30 +29,33 @@
       
       window.worker = new Worker("/worker.js");
       window.worker.onmessage = function(event) {
-        // console.log(event.data);
+
+      // comment this line to work in firefox
+      //console.log(event.data);
 
         var data = event.data;
         socket.send({message: 'job_completed', id:data.id, data:data.data, uuid:"#{uuid}"});
 
         window.worker.terminate();
 
-        document.getElementById("status").innerHTML += '<p>Requesting another job...</p>';
+        smessage('Requesting another job...');
         socket.send({message: 'next_job', uuid:"#{uuid}"});
       };
 
-      // console.log(data);
-      document.getElementById("status").innerHTML += ('<p>Starting new job ' + data.job.id +  ' ....</p>');
+      //comment this line to work in firefox
+      //console.log(data);
+      smessage('Starting new job ' + data.job.id +  ' ....');
       window.worker.postMessage(data.job);
     } else if(data.message == "stop" && data.uuid == "#{uuid}") {
       // console.log("Terminating worker...");
-      document.getElementById("status").innerHTML += '<p>Terminating worker...</p>';
+      smessage('Terminating worker...');
 
       if(window.worker) {
         window.worker.terminate();
-      document.getElementById("status").innerHTML += '<p>Worker terminated!</p>';
+      smessage('Worker terminated!');
       }
     } else if(data.message == "result" && data.uuid == "#{uuid}") {
-      document.getElementById("status").innerHTML += '<p>The result of this awesome computation is: ' + data.data + '</p>';
+      smessage('The result of this awesome computation is: ' + data.data );
       $('#progressbar').progressbar({ value: 100 });
     } else if(data.message == "status" && data.uuid == "#{uuid}") {
       $('#progressbar').progressbar({ value: data.percentage });
@@ -60,11 +63,11 @@
   });
 
   socket.on('disconnect', function(){ 
-    document.getElementById("status").innerHTML += '<p>Disconnected!</p>';
+    smessage('Disconnected!');
     if(window.worker) {
-      document.getElementById("status").innerHTML += '<p>Terminating worker...</p>';
+      smessage('Terminating worker...');
       window.worker.terminate();
-      document.getElementById("status").innerHTML += '<p>Worker terminated!</p>';
+      smessage('Worker terminated!');
     }
   });
   

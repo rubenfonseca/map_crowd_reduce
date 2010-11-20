@@ -1,0 +1,46 @@
+%h1= title
+
+%link{href:"http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css", rel:"stylesheet", type:"text/css"}
+%script{src: "https://ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.min.js"}
+%script{src: "https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.6/jquery-ui.min.js"}
+%script{src: "/socket.io/socket.io.js"}
+%script{src: "/mcr.js"}
+:javascript
+  $(function() {
+    $('#progressbar').progressbar({ value: 0 });
+  });
+
+  var socket = new io.Socket(window.location.hostname, {'port': window.location.port}); 
+
+  socket.on('connect', function(){ 
+    smessage('Connected. Not working, just monitoring...');
+    socket.send({message: 'monitor', uuid: "#{uuid}"});
+  });
+
+  socket.on('message', function(data) { 
+    if(data.message == "result" && data.uuid == "#{uuid}") {
+      smessage('The result of this awesome computation is: ' + data.data );
+      $('#progressbar').progressbar({ value: 100 });
+    } else if(data.message == "status" && data.uuid == "#{uuid}") {
+      $('#progressbar').progressbar({ value: data.percentage });
+    }
+  });
+
+  socket.on('disconnect', function(){ 
+    smessage('Disconnected!');
+  });
+  
+  if ( ! supports_web_workers() ) { 
+      smessage('Your browser does not support WebWorkers! But you can still monitor.');
+  }
+  socket.connect(); 
+
+  
+#progressbar
+
+#text
+  If you want to do some work, click 
+  %a{href: '/compute/' + uuid}this link
+
+#status
+
