@@ -6,13 +6,18 @@
 
 %script{src: "/socket.io/socket.io.js"}
 :javascript
-  $(function() {
-    $('#progressbar').progressbar({ value: 0 });
-  });
-
   function supports_web_workers() { return !!window.Worker; }
 
   var socket = new io.Socket(window.location.hostname, {'port': 3000}); 
+
+  $(function() {
+    $('#progressbar').progressbar({ value: 0 });
+
+    if ( supports_web_workers() ) { socket.connect(); }
+    else { 
+        document.getElementById("status").innerHTML = '<p>Your browser does not support WebWorkers!</p>';
+    }
+  });
 
   socket.on('connect', function(){ 
     document.getElementById("status").innerHTML += '<p>Connected. Requesting job...</p>';
@@ -63,11 +68,6 @@
     }
   });
   
-  if ( supports_web_workers() ) { socket.connect(); }
-  else { 
-      document.getElementById("status").innerHTML = '<p>Your browser does not support WebWorkers!</p>';
-  }
-
 #progressbar
 
 #status
