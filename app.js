@@ -74,7 +74,6 @@ socket.on('connection', function(client) {
 
       if(id == "r_job") {
         console.log("Reduce job finished :D");
-        console.log(data.data);
 
         for(var c in socket.clients) {
           socket.clients[c].send({message:"result", data:data.data, uuid:u});
